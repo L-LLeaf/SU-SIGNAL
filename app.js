@@ -43,6 +43,7 @@
     if (key === "profile" && window.SUSignalProfile) { window.SUSignalCloseApp = closeApp; window.SUSignalProfile.init(appView); return; }
     if (key === "style" && window.SUSignalStyle) { window.SUSignalCloseApp = closeApp; window.SUSignalStyle.init(appView); return; }
     if (key === "notice" && window.SUSignalMoment) { window.SUSignalCloseApp = closeApp; window.SUSignalMoment.init(appView); return; }
+    if (key === "data" && window.SUSignalData) { window.SUSignalCloseApp = closeApp; window.SUSignalData.init(appView); return; }
     if (key === "chat" && window.SUSignalChat) { window.SUSignalCloseApp = closeApp; window.SUSignalChat.init(appView); return; }
     appView.innerHTML = `
       <header class="app-view-header">
