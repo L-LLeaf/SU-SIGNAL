@@ -26,7 +26,9 @@
     }
   }
   function avatarMarkup(value, fallback, cls="profile-avatar") {
-    return '<div class="'+cls+'">'+(value ? '<img src="'+escapeHTML(value)+'" alt="头像预览">' : '<span>'+fallback+'</span>')+'</div>';
+    const defaultSrc = fallback === "L" ? "./assets/player-default.webp" : "./assets/su-default.webp";
+    const src = value || defaultSrc;
+    return '<div class="'+cls+'"><img src="'+escapeHTML(src)+'" alt="头像预览" onerror="this.remove();this.parentNode.textContent=\''+fallback+'\'"></div>';
   }
   function renderPreviews() {
     if (!root) return;
