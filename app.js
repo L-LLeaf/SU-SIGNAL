@@ -12,7 +12,7 @@
     profile: ["PROFILE", "个人资料", "分别设置玩家与苏新皓的头像和显示信息。"],
     engine: ["ENGINE", "回复引擎", "调整随机回复、连接动画与消息生成规则。"],
     style: ["STYLE", "外观设置", "自定义主题、字体、聊天气泡与聊天背景。"],
-    notice: ["NOTICE", "通知", "管理主动消息的浏览器通知与显示内容。"],
+    notice: ["MOMENT", "瞬间", "为特定日期添加专属内容，加入当天的随机回复。"],
     data: ["DATA", "数据管理", "备份、恢复与管理保存在本设备中的数据。"],
     choice: ["CHOICE", "选择", "把难以决定的小事交给转盘。"]
   };
@@ -42,7 +42,7 @@
     if (key === "engine" && window.SUSignalEngine) { window.SUSignalCloseApp = closeApp; window.SUSignalEngine.init(appView); return; }
     if (key === "profile" && window.SUSignalProfile) { window.SUSignalCloseApp = closeApp; window.SUSignalProfile.init(appView); return; }
     if (key === "style" && window.SUSignalStyle) { window.SUSignalCloseApp = closeApp; window.SUSignalStyle.init(appView); return; }
-    if (key === "notice" && window.SUSignalNotice) { window.SUSignalCloseApp = closeApp; window.SUSignalNotice.init(appView); return; }
+    if (key === "notice" && window.SUSignalMoment) { window.SUSignalCloseApp = closeApp; window.SUSignalMoment.init(appView); return; }
     if (key === "chat" && window.SUSignalChat) { window.SUSignalCloseApp = closeApp; window.SUSignalChat.init(appView); return; }
     appView.innerHTML = `
       <header class="app-view-header">
