@@ -54,11 +54,12 @@
     wheel.style.transition="none";
     wheel.style.transform="rotate("+startRotation+"deg)";
     void wheel.offsetWidth;
-    wheel.style.transition="transform 5.2s cubic-bezier(.12,.72,.12,1)";
+    const duration=window.matchMedia?.("(prefers-reduced-motion: reduce)").matches?250:5200;
+    wheel.style.transition="transform "+duration+"ms cubic-bezier(.12,.72,.12,1)";
     wheel.style.transform="rotate("+rotation+"deg)";
     spinTimer=setTimeout(()=>{
       spinning=false;spinTimer=null;result=options[chosen];render();
-    },5350);
+    },duration+150);
   }
   function init(el){
     root=el;render();
