@@ -3,6 +3,16 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let db={custom:[],usage:{}}, builtins=[], cats=[], category='全部分类', query='', sort='category', selected=new Set(), editId=null, root=null;
   try{const old=JSON.parse(localStorage.getItem(KEY)||'{}');db={custom:Array.isArray(old.custom)?old.custom:[],usage:old.usage&&typeof old.usage==='object'?old.usage:{}};}catch{}
+  // Repair cards imported by older builds that stored 【分类】 inside the text.
+  let repaired=false;
+  db.custom=db.custom.map(card=>{
+    if(card.category==='未分类'&&typeof card.text==='string'){
+      const m=card.text.match(/^【([^】]+)】\\s*(.+)$/);
+      if(m){repaired=true;return {...card,category:m[1].trim(),text:m[2].trim()};}
+    }
+    return card;
+  });
+  if(repaired){const seen=new Set();db.custom=db.custom.filter(card=>{const key=card.category+'\\u0000'+card.text.trim();if(seen.has(key))return false;seen.add(key);return true;});localStorage.setItem(KEY,JSON.stringify(db));}
   const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
   const list=()=>{let a=[...db.custom];if(category!=='全部分类')a=a.filter(c=>c.category===category);if(query)a=a.filter(c=>(c.text+' '+c.category).toLowerCase().includes(query.toLowerCase()));if(sort==='newest')a=[...a].reverse();if(sort==='used')a=[...a].sort((x,y)=>(db.usage[y.id]||0)-(db.usage[x.id]||0));return a;};
   function render(){
