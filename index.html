@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e32636">
+  <meta name="description" content="SU / SIGNAL — a private communication channel between SU and LIGHT.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <title>SU / SIGNAL</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <section id="lock-screen" class="lock-screen">
+      <div class="lock-top"><span class="signal-mark"><i></i></span><span>PRIVATE CHANNEL / 001</span></div>
+      <div class="lock-center">
+        <p class="eyebrow">SU × LIGHT</p>
+        <h1>SU <span>/</span><br>SIGNAL</h1>
+        <p class="lock-subtitle">A PRIVATE LINE BETWEEN US.</p>
+        <div class="signal-orb" aria-hidden="true"><span></span></div>
+        <form id="unlock-form" class="unlock-form">
+          <label for="password">ENTER ACCESS CODE</label>
+          <input id="password" type="password" autocomplete="off" placeholder="输入访问密码" required>
+          <p class="hint">五字箴言（字母大写）</p>
+          <button class="primary-button" type="submit">建立连接 <span>↗</span></button>
+          <p id="unlock-error" class="error-message" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="lock-bottom"><span>EST. FOR SU & LIGHT</span><span>RED LIGHT / ON STANDBY</span></div>
+    </section>
+    <main id="main-screen" class="main-screen hidden">
+      <header class="site-header">
+        <a class="wordmark" href="#" aria-label="SU SIGNAL 首页">SU<span>/</span>SIGNAL</a>
+        <div class="header-status"><span class="status-dot"></span> CONNECTION READY</div>
+      </header>
+      <section class="home-intro">
+        <p class="eyebrow">PRIVATE COMMUNICATION SYSTEM <span>— 01</span></p>
+        <h1>HELLO,<br><em>LIGHT.</em></h1>
+        <div class="intro-foot"><span>YOUR LINE IS OPEN.</span><span id="today-date"></span></div>
+      </section>
+      <section class="app-grid" aria-label="应用列表">
+        <button class="app-tile app-chat" data-app="chat"><span class="tile-index">01</span><span class="tile-symbol">↗</span><strong>CHAT</strong><small>聊天</small></button>
+        <button class="app-tile" data-app="cards"><span class="tile-index">02</span><span class="tile-symbol">▤</span><strong>CARDS</strong><small>字卡库</small></button>
+        <button class="app-tile" data-app="profile"><span class="tile-index">03</span><span class="tile-symbol">◉</span><strong>PROFILE</strong><small>个人资料</small></button>
+        <button class="app-tile" data-app="engine"><span class="tile-index">04</span><span class="tile-symbol">⌁</span><strong>ENGINE</strong><small>回复引擎</small></button>
+        <button class="app-tile" data-app="style"><span class="tile-index">05</span><span class="tile-symbol">◐</span><strong>STYLE</strong><small>外观设置</small></button>
+        <button class="app-tile" data-app="notice"><span class="tile-index">06</span><span class="tile-symbol">◎</span><strong>NOTICE</strong><small>通知</small></button>
+        <button class="app-tile" data-app="data"><span class="tile-index">07</span><span class="tile-symbol">⇅</span><strong>DATA</strong><small>数据管理</small></button>
+        <button class="app-tile app-choice" data-app="choice"><span class="tile-index">08</span><span class="tile-symbol">✳</span><strong>CHOICE</strong><small>选择</small></button>
+      </section>
+      <footer class="home-footer"><span>SU × LIGHT</span><span>KEEP THE SIGNAL.</span><span>V. 0.1.0</span></footer>
+    </main>
+    <section id="app-view" class="app-view hidden" aria-live="polite"></section>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
