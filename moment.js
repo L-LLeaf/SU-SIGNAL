@@ -21,6 +21,6 @@
     form.addEventListener("submit",e=>{e.preventDefault();const date=$("#moment-date").value,text=$("#moment-text").value.trim(),repeatYearly=$("#moment-repeat").checked;if(!date||!text)return;items.push({id:uid(),date,text,repeatYearly,createdAt:new Date().toISOString()});write();render();});
   }
   function init(el){root=el;items=read();render();if(root.dataset.momentBound)return;root.dataset.momentBound="1";root.addEventListener("click",e=>{const b=e.target.closest("[data-moment-act]");if(!b)return;const a=b.dataset.momentAct;if(a==="back"){window.SUSignalCloseApp?.();return;}if(a==="delete"&&confirm("确定删除这个瞬间吗？")){items=items.filter(x=>x.id!==b.dataset.id);write();render();}});}
-  function getTodayMoments(){const key=today(),full=new Date().getFullYear()+"-"+key;return read().filter(x=>x&&x.text&&(x.repeatYearly?String(x.date).slice(5)===key:x.date===full)).map(x=>({id:x.id,text:x.text,source:"moment"}));}
+  function getTodayMoments(){const key=today(),full=new Date().getFullYear()+"-"+key;const custom=read().filter(x=>x&&x.text&&(x.repeatYearly?String(x.date).slice(5)===key:x.date===full)).map(x=>({id:x.id,text:x.text,source:"moment"}));if(key==="01-12")custom.push({id:"system-su-birthday",text:"谢谢你陪我过生日，遇到你我很幸福🫶🏻",source:"moment",locked:true});return custom;}
   window.SUSignalMoment={init,getTodayMoments, getAll:read};
 })();
