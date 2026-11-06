@@ -3,7 +3,7 @@
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const uid=()=> "m-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);
   const now=()=>new Date().toISOString();
-  let root=null, messages=[], query="", searchOpen=false, timer=null, activeTimer=null, pending=false, lastTrigger=0, specialDates={}, previewText="";
+  let root=null, messages=[], timer=null, activeTimer=null, pending=false, lastTrigger=0, specialDates={};
   const read=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")??d}catch{return d}};
   const write=()=>localStorage.setItem(KEY,JSON.stringify(messages));
   const engine=()=>({...((window.SUSignalEngine?.getSettings?.())||{})});
@@ -33,15 +33,12 @@
     }).join("");
     root.innerHTML='<header class="app-view-header"><button class="back-button" data-chat-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL — PRIVATE LINE</span></header>'+
       '<section class="chat-topline"><div><p class="eyebrow">PRIVATE CHANNEL / 001</p><h2>CHAT <em>对话</em></h2></div><div class="chat-online"><i></i> SIGNAL READY</div></section>'+
-      '<div class="chat-toolbar"><button data-chat-act="search">⌕ 搜索</button><button data-chat-act="preview">随机预览</button><button data-chat-act="stats">字卡统计</button><button data-chat-act="export">导出聊天</button></div>'+
       '<section class="chat-panel"><div class="chat-contact"><div class="chat-contact-avatar">'+(avatar("su")?'<img src="'+esc(avatar("su"))+'" alt="">':"SU")+'</div><div><strong>'+esc(name("su"))+'</strong><small>ONLY YOU & ME / 001</small></div><span class="chat-contact-status">PRIVATE</span></div>'+
-      (searchOpen?'<div class="chat-search"><input id="chat-search-input" type="search" placeholder="搜索聊天内容" value="'+esc(query)+'"><button data-chat-act="clear-search">清除</button></div>':"")+
       '<div class="chat-scroll" id="chat-scroll">'+(rows||'<div class="chat-empty">这里还没有消息。<br>发送一句话，开始你们的对话。</div>')+'</div>'+
       '<div class="chat-connection" id="chat-connection" hidden></div>'+
-      '<div class="chat-input-area"><textarea id="chat-input" rows="2" placeholder="发送消息…"></textarea><div class="chat-input-actions"><span>每次点击「说话」最多触发一条回复</span><div><button data-chat-act="send" class="chat-send">发送</button><button data-chat-act="speak" class="chat-speak">说话 ↗</button></div></div></div></section>'+
-      '<div class="chat-bottom-tools"><button data-chat-act="clear">清空聊天</button><span>消息仅保存在当前设备</span></div>'+
+      '<div class="chat-input-area"><textarea id="chat-input" rows="2" placeholder="发送消息…"></textarea><div class="chat-input-actions"><span>每次点击「连接」最多触发一条回复</span><div><button data-chat-act="send" class="chat-send">发送</button><button data-chat-act="speak" class="chat-speak">连接 ↗</button></div></div></div></section>'+
+      '<div class="chat-bottom-tools"><div class="chat-bottom-actions"><button data-chat-act="clear">清空聊天</button><button data-chat-act="export">导出聊天</button></div><span>消息仅保存在当前设备</span></div>'+
       '<div class="chat-modal" id="chat-modal" hidden><div class="chat-dialog" id="chat-dialog"></div></div>';
-    if(query&&searchOpen){const input=$("#chat-search-input",root);input?.focus();input?.setSelectionRange(query.length,query.length);}
     scrollBottom();
   }
   function append(who,text,extra={}){const m={id:uid(),who,text,time:now(),...extra};messages.push(m);write();render();return m;}
@@ -84,11 +81,6 @@
     if(a==="back"){clearTimeout(timer);clearInterval(activeTimer);window.SUSignalCloseApp?.();return;}
     if(a==="send"){const input=$("#chat-input",root),text=input.value.trim();if(!text)return;append("player",text);input.value="";return;}
     if(a==="speak"){speak();return;}
-    if(a==="search"){searchOpen=!searchOpen;query="";render();return;}
-    if(a==="clear-search"){query="";render();return;}
-    if(a==="preview"){const r=chooseReply();showModal('<div class="chat-dialog-head"><strong>随机回复预览</strong><button data-chat-act="modal-close">×</button></div><p class="chat-preview-text">'+esc(r.noReply?"本次结果：已读不回复":r.text)+'</p><small>预览不会发送消息，也不会计入字卡使用次数。</small><div class="chat-dialog-actions"><button data-chat-act="preview-again">再抽一次</button><button data-chat-act="modal-close">关闭</button></div>');return;}
-    if(a==="preview-again"){const r=chooseReply();const p=$(".chat-preview-text",root);if(p)p.textContent=r.noReply?"本次结果：已读不回复":r.text;return;}
-    if(a==="stats"){const all=getCards(),used=all.filter(c=>messages.some(m=>m.cardId===c.id));showModal('<div class="chat-dialog-head"><strong>字卡使用统计</strong><button data-chat-act="modal-close">×</button></div><p>已加载字卡：'+all.length+' 条</p><p>本次聊天使用过：'+used.length+' 条</p><p>苏新皓回复消息：'+messages.filter(m=>m.who==="su").length+' 条</p><div class="chat-dialog-actions"><button data-chat-act="modal-close">关闭</button></div>');return;}
     if(a==="export"){const body=messages.map(m=>'['+new Date(m.time).toLocaleString("zh-CN")+'] '+(m.who==="player"?"LIGHT":"SU")+': '+(m.recalled?"[已撤回]":m.text)).join("\\n");const u=URL.createObjectURL(new Blob([body],{type:"text/plain;charset=utf-8"}));const link=document.createElement("a");link.href=u;link.download="SU-SIGNAL-聊天记录.txt";link.click();URL.revokeObjectURL(u);return;}
     if(a==="clear"&&confirm("确定清空全部聊天记录吗？此操作无法撤销。")){messages=[];write();render();return;}
     if(a==="modal-close"){closeModal();return;}
@@ -99,11 +91,9 @@
     if(a==="quote"&&m){const input=$("#chat-input",root);input.value="引用："+m.text+"\\n";input.focus();return;}
   }
   function messageMenu(e){const item=e.target.closest(".chat-message");if(!item)return;const id=item.dataset.id,m=messages.find(x=>x.id===id);if(!m)return;showModal('<div class="chat-dialog-head"><strong>消息操作</strong><button data-chat-act="modal-close">×</button></div><p class="chat-menu-preview">'+esc(m.text||"这条消息已撤回")+'</p><div class="chat-menu-grid">'+(m.who==="player"?'<button data-chat-act="edit" data-id="'+id+'">编辑</button><button data-chat-act="recall" data-id="'+id+'">撤回</button>':"")+'<button data-chat-act="quote" data-id="'+id+'">引用</button><button data-chat-act="favorite" data-id="'+id+'">'+(m.favorite?"取消收藏":"收藏")+'</button><button data-chat-act="modal-close">关闭</button></div>');}
-  function searchRender(){const q=query.trim().toLowerCase();root.querySelectorAll(".chat-message").forEach(el=>{const m=messages.find(x=>x.id===el.dataset.id);el.hidden=!!q&&!((m?.text||"").toLowerCase().includes(q));});}
   function startActive(){clearInterval(activeTimer);const s=cfg(),min=Math.max(1,Number(s.activeMin)||30),max=Math.max(min,Number(s.activeMax)||90);const ms=(min+Math.random()*(max-min))*60000;activeTimer=setTimeout(()=>{if(!document.hidden&&!pending&&root?.isConnected){const c=chooseCard();if(c){append("su",c.text,{cardId:c.id,proactive:true});window.SUSignalCards?.markUsed?.(c.id);}}startActive();},ms);}
   async function init(el){root=el;messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];render();if(root.dataset.chatBound)return;root.dataset.chatBound="1";
     root.addEventListener("click",e=>{const b=e.target.closest("[data-chat-act]");if(b){action(b.dataset.chatAct,b.dataset.id);return;}if(e.target.closest(".chat-message"))messageMenu(e);});
-    root.addEventListener("input",e=>{if(e.target.id==="chat-search-input"){query=e.target.value;searchRender();}});
     root.addEventListener("keydown",e=>{if(e.target.id==="chat-input"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();action("send");}});
     startActive();
   }
