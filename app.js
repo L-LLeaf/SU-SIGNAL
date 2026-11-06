@@ -39,6 +39,7 @@
     mainScreen.classList.add("hidden");
     appView.classList.remove("hidden");
     if (key === "cards" && window.SUSignalCards) { window.SUSignalCloseApp = closeApp; window.SUSignalCards.init(appView); return; }
+    if (key === "engine" && window.SUSignalEngine) { window.SUSignalCloseApp = closeApp; window.SUSignalEngine.init(appView); return; }
     appView.innerHTML = `
       <header class="app-view-header">
         <button class="back-button" type="button" id="back-home">← HOME</button>
