@@ -3,7 +3,7 @@
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const uid=()=> "m-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);
   const now=()=>new Date().toISOString();
-  let root=null, messages=[], timer=null, activeTimer=null, pending=false, lastTrigger=0, specialDates={};
+  let root=null, messages=[], timer=null, activeTimer=null, pending=false, lastTrigger=0, specialDates={}, activeStarted=false;
   const read=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")??d}catch{return d}};
   const write=()=>localStorage.setItem(KEY,JSON.stringify(messages));
   const engine=()=>({...((window.SUSignalEngine?.getSettings?.())||{})});
@@ -121,13 +121,14 @@
   }
   function messageMenu(e){const item=e.target.closest(".chat-message");if(!item)return;const id=item.dataset.id,m=messages.find(x=>x.id===id);if(!m||m.type==="redpacket")return;showModal('<div class="chat-dialog-head"><strong>消息操作</strong><button data-chat-act="modal-close">×</button></div><p class="chat-menu-preview">'+esc(m.text||"这条消息已撤回")+'</p><div class="chat-menu-grid">'+(m.who==="player"?'<button data-chat-act="edit" data-id="'+id+'">编辑</button><button data-chat-act="recall" data-id="'+id+'">撤回</button>':"")+'<button data-chat-act="quote" data-id="'+id+'">引用</button><button data-chat-act="favorite" data-id="'+id+'">'+(m.favorite?"取消收藏":"收藏")+'</button><button data-chat-act="modal-close">关闭</button></div>');}
   function sendProactiveNow(){if(pending)return false;const c=chooseCard();if(!c)return false;append("su",c.text,{cardId:c.id,proactive:true,test:true});window.SUSignalCards?.markUsed?.(c.id);window.SUSignalNotice?.notifyProactive?.(c.text);return true;}
-  function startActive(){clearTimeout(activeTimer);const s=cfg(),min=Math.max(1,Number(s.activeMin)||30),max=Math.max(min,Number(s.activeMax)||90);const ms=(min+Math.random()*(max-min))*60000;activeTimer=setTimeout(()=>{if(!document.hidden&&!pending&&root?.isConnected){const c=chooseCard();if(c){append("su",c.text,{cardId:c.id,proactive:true});window.SUSignalCards?.markUsed?.(c.id);window.SUSignalNotice?.notifyProactive?.(c.text);}}startActive();},ms);}
+  function startActive(){clearTimeout(activeTimer);const s=cfg(),min=Math.max(1,Number(s.activeMin)||30),max=Math.max(min,Number(s.activeMax)||90);const ms=(min+Math.random()*(max-min))*60000;activeTimer=setTimeout(()=>{if(!pending){const c=chooseCard();if(c){append("su",c.text,{cardId:c.id,proactive:true});window.SUSignalCards?.markUsed?.(c.id);window.SUSignalNotice?.notifyProactive?.(c.text);}}startActive();},ms);}
   async function init(el){root=el;await (window.SUSignalCards?.ready||Promise.resolve());messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];render();if(root.dataset.chatBound)return;root.dataset.chatBound="1";
     root.addEventListener("click",e=>{const b=e.target.closest("[data-chat-act]");if(b){action(b.dataset.chatAct,b.dataset.id,b.dataset.reply);return;}if(e.target.closest(".chat-message"))messageMenu(e);});
     root.addEventListener("keydown",e=>{if(e.target.id==="chat-input"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();action("send");}});
-    startActive();
   }
+  async function startProactiveScheduler(){if(activeStarted)return;activeStarted=true;await (window.SUSignalCards?.ready||Promise.resolve());messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];startActive();}
   async function testProactive(){await (window.SUSignalCards?.ready||Promise.resolve());if(!root){messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];}const sent=sendProactiveNow();return {sent,notified:sent&&NotificationAvailable()};}
   function NotificationAvailable(){return "Notification" in window&&Notification.permission==="granted";}
-  window.SUSignalChat={init,getMessages:()=>messages,append,testProactive};
+  window.SUSignalChat={init,getMessages:()=>messages,append,testProactive,startProactiveScheduler};
+  startProactiveScheduler();
 })();
