@@ -1,5 +1,5 @@
-const CACHE = "su-signal-shell-v35";
-const ASSETS = ["./", "./index.html", "./styles.css", "./cards.css?v=b11dcb8", "./engine.css?v=engine3", "./chat.css?v=chat13", "./app.js", "./cards.js?v=nickname1", "./engine.js?v=engine2", "./chat.js?v=chat15", "./profile.js?v=profile5", "./profile.css?v=profile2", "./style.js?v=style3", "./style.css?v=style1", "./notice.js?v=notice2", "./notice.css?v=notice1", "./cards.json", "./manifest.webmanifest", "./assets/player-default.webp", "./assets/su-default.webp"];
+const CACHE = "su-signal-shell-v36";
+const ASSETS = ["./", "./index.html", "./styles.css", "./cards.css?v=b11dcb8", "./engine.css?v=engine3", "./chat.css?v=chat13", "./app.js", "./cards.js?v=nickname1", "./engine.js?v=engine3", "./chat.js?v=chat16", "./profile.js?v=profile5", "./profile.css?v=profile2", "./style.js?v=style3", "./style.css?v=style1", "./notice.js?v=notice2", "./notice.css?v=notice1", "./cards.json", "./manifest.webmanifest", "./assets/player-default.webp", "./assets/su-default.webp"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
