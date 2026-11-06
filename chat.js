@@ -31,9 +31,9 @@
       const recalled=m.recalled?'<em class="chat-recalled">这条消息已撤回</em>':esc(m.text);
       return sep+'<article class="chat-message '+cls+(m.favorite?' is-favorite':'')+'" data-id="'+esc(m.id)+'">'+(!own?avatarHtml:"")+'<div class="chat-message-main">'+(showNames?'<div class="chat-name">'+esc(name(m.who))+'</div>':"")+'<div class="chat-bubble-wrap">'+quoted+'<div class="chat-bubble">'+recalled+'</div></div>'+(showTime||m.showTime?'<time>'+formatTime(m.time)+'</time>':"")+'</div>'+(own?avatarHtml:"")+'</article>';
     }).join("");
-    root.innerHTML='<header class="app-view-header"><button class="back-button" data-chat-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL — PRIVATE LINE</span></header>'+
-      '<section class="chat-topline"><div><p class="eyebrow">PRIVATE CHANNEL / 001</p><h2>CHAT <em>对话</em></h2></div><div class="chat-online"><i></i> SIGNAL READY</div></section>'+
-      '<section class="chat-panel"><div class="chat-contact"><div class="chat-contact-avatar">'+(avatar("su")?'<img src="'+esc(avatar("su"))+'" alt="">':"SU")+'</div><div><strong>'+esc(name("su"))+'</strong><small>ONLY YOU & ME / 001</small></div><span class="chat-contact-status">PRIVATE</span></div>'+
+    root.innerHTML='<header class="app-view-header"><button class="back-button" data-chat-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL</span></header>'+
+      '<section class="chat-topline"><div><h2>CHAT <em>对话</em></h2></div><div class="chat-online"><i></i> SIGNAL READY</div></section>'+
+      '<section class="chat-panel"><div class="chat-contact"><div class="chat-contact-avatar">'+(avatar("su")?'<img src="'+esc(avatar("su"))+'" alt="">':"SU")+'</div><div><strong>'+esc(name("su"))+'</strong></div></div>'+
       '<div class="chat-scroll" id="chat-scroll">'+(rows||'<div class="chat-empty">这里还没有消息。<br>发送一句话，开始你们的对话。</div>')+'</div>'+
       '<div class="chat-connection" id="chat-connection" hidden></div>'+
       '<div class="chat-input-area"><textarea id="chat-input" rows="2" placeholder="发送消息…"></textarea><div class="chat-input-actions"><span>每次点击「连接」最多触发一条回复</span><div><button data-chat-act="send" class="chat-send">发送</button><button data-chat-act="speak" class="chat-speak">连接 ↗</button></div></div></div></section>'+
