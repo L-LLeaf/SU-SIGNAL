@@ -15,9 +15,9 @@
   });
   if(repaired){const seen=new Set();db.custom=db.custom.filter(card=>{const key=card.category+'\\u0000'+card.text.trim();if(seen.has(key))return false;seen.add(key);return true;});localStorage.setItem(KEY,JSON.stringify(db));}
   const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
-  const list=()=>{let a=[...db.custom];if(category!=='全部分类')a=a.filter(c=>c.category===category);if(query)a=a.filter(c=>(c.text+' '+c.category).toLowerCase().includes(query.toLowerCase()));if(sort==='newest')a=[...a].reverse();if(sort==='used')a=[...a].sort((x,y)=>(db.usage[y.id]||0)-(db.usage[x.id]||0));return a;};
+  const list=()=>{let a=db.custom.filter(c=>!c.hidden);if(category!=='全部分类')a=a.filter(c=>c.category===category);if(query)a=a.filter(c=>(c.text+' '+c.category).toLowerCase().includes(query.toLowerCase()));if(sort==='newest')a=[...a].reverse();if(sort==='used')a=[...a].sort((x,y)=>(db.usage[y.id]||0)-(db.usage[x.id]||0));return a;};
   function render(){
-    if(!root)return;const rows=list(), allCats=[...new Set(db.custom.map(c=>c.category))];
+    if(!root)return;const rows=list(), visibleCustom=db.custom.filter(c=>!c.hidden), allCats=[...new Set(visibleCustom.map(c=>c.category))];
     root.innerHTML='<header class="app-view-header"><button class="back-button" data-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL — CARDS</span></header>'+
     '<div class="cards-heading"><div><p class="eyebrow">PRIVATE COMMUNICATION SYSTEM / PERSONAL LIBRARY</p><h2>CARDS<br><em>我的字卡</em></h2></div><div class="cards-count"><strong>'+db.custom.length+'</strong><span>MY CARDS</span><small>'+allCats.length+' CATEGORIES</small></div></div>'+
     ''+
@@ -27,12 +27,42 @@
     '<div class="cards-import-help"><strong>TXT 导入格式说明</strong><span>每行一条字卡；格式为 <code>【分类名称】字卡内容</code>，例如 <code>【日常】今天吃饭了吗？</code>。</span><span>不写分类时默认归入「未分类」；空行忽略，重复字卡自动跳过。</span></div>'+
     '<div class="cards-bulkbar"><label><input type="checkbox" id="select-visible"> 全选当前列表</label><span>'+selected.size+' 已选择</span><div><button data-act="move">移动分类</button> '+'<button class="danger" data-act="delete-many">删除</button>'+'</div></div>'+
     '<div class="cards-list">'+(rows.length?rows.map(c=>'<article class="card-row"><label><input type="checkbox" data-select="'+esc(c.id)+'" '+(selected.has(c.id)?'checked':'')+'></label><div class="card-copy"><div class="card-meta"><span>'+esc(c.category)+'</span><small>'+'CUSTOM · '+(db.usage[c.id]||0)+' 次使用'+'</small></div><p>'+esc(c.text)+'</p></div><div class="card-buttons"><button data-act="edit" data-id="'+esc(c.id)+'">修改</button><button class="danger" data-act="delete" data-id="'+esc(c.id)+'">删除</button></div></article>').join(''):'<div class="cards-empty">没有找到字卡。试试其他关键词或分类。</div>')+'</div>'+
-    '<div class="cards-footnote"><span>自定义字卡 '+db.custom.length+' 条</span><span>使用次数仅统计实际发送</span></div>'+
+    '<div class="cards-footnote"><span>自定义字卡 '+visibleCustom.length+' 条</span><span>使用次数仅统计实际发送</span></div>'+
     '<input id="card-file" type="file" accept=".txt,text/plain" hidden><div class="cards-modal" id="card-modal" hidden><form id="card-form" class="cards-dialog"><div class="cards-dialog-top"><strong>'+(editId?'编辑自定义字卡':'新增自定义字卡')+'</strong><button type="button" data-act="close">×</button></div><label>分类<input name="category" list="card-categories" required></label><datalist id="card-categories">'+allCats.map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist><label>字卡内容<textarea name="text" rows="4" required></textarea></label><p class="cards-form-hint">内置字卡不可修改；这里仅管理你的自定义字卡。</p><div class="cards-dialog-actions"><button type="button" data-act="close">取消</button><button class="cards-primary" type="submit">保存</button></div></form></div>';
   }
   function modal(c){editId=c?.id||null;const box=$('#card-modal',root);box.hidden=false;const f=$('#card-form',root);f.elements.category.value=c?.category||(category!=='全部分类'?category:'');f.elements.text.value=c?.text||'';f.elements.category.focus();}
   function parse(s){return s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(?:【([^】]+)】|\[([^\]]+)\])\s*(.+)$/);return {category:(m?.[1]||m?.[2]||'未分类').trim(),text:(m?.[3]||x).trim()};}).filter(x=>x.text);}
   function add(items){let n=0,d=0;for(const x of items){if([...builtins,...db.custom].some(c=>c.category===x.category&&c.text.trim()===x.text.trim())){d++;continue;}db.custom.push({id:'custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),category:x.category,text:x.text,source:'custom'});n++;}save();return {n,d};}
+  const NICKNAME_PHRASES=[
+    "{name}，我喜欢你。",
+    "{name}，我想你了。",
+    "{name}，我爱你。",
+    "{name}，谢谢你。",
+    "{name}，不要离开我好嘛🥺",
+    "{name}，希望你能幸福。",
+    "{name}，希望你能开心(✪▽✪)",
+    "{name}，我们会永远在一起。"
+  ];
+  function syncNickname(value){
+    const nickname=String(value||"").trim().slice(0,20);
+    if(!nickname)return Promise.resolve({added:0});
+    return builtinsReady.then(()=>{
+      db.custom=db.custom.filter(x=>!x.nicknameLinked);
+      const items=[
+        {category:"昵称",text:nickname,hidden:false},
+        ...NICKNAME_PHRASES.map(text=>({category:"昵称专属",text:text.replaceAll("{name}",nickname),hidden:true}))
+      ];
+      let added=0;
+      for(const item of items){
+        if([...builtins,...db.custom].some(x=>x.category===item.category&&x.text.trim()===item.text.trim()))continue;
+        db.custom.push({id:"nickname-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8),category:item.category,text:item.text,source:"custom",hidden:item.hidden,nicknameLinked:true});
+        added++;
+      }
+      save();
+      if(root)render();
+      return {added};
+    });
+  }
   const download=(name,body,type)=>{const u=URL.createObjectURL(new Blob([body],{type:type||'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);};
   function action(a,id,tabName){
     const c=[...builtins,...db.custom].find(x=>x.id===id);
@@ -42,8 +72,8 @@
     if(a==='close'){$('#card-modal',root).hidden=true;editId=null;return;}
     if(a==='batch'){const s=prompt('每行一条。可用 【分类】内容 指定分类；否则归入“未分类”。');if(s!==null){const r=add(parse(s));alert('新增 '+r.n+' 条，跳过重复 '+r.d+' 条。');render();}return;}
     if(a==='import'){$('#card-file',root).click();return;}
-    if(a==='export'){download('SU-SIGNAL-自定义字卡.txt',db.custom.map(x=>'【'+x.category+'】'+x.text).join('\n'));return;}
-    if(a==='json'){download('SU-SIGNAL-自定义字卡备份.json',JSON.stringify({version:1,custom:db.custom,usage:db.usage},null,2),'application/json');return;}
+    if(a==='export'){download('SU-SIGNAL-自定义字卡.txt',db.custom.filter(x=>!x.hidden).map(x=>'【'+x.category+'】'+x.text).join('\n'));return;}
+    if(a==='json'){download('SU-SIGNAL-自定义字卡备份.json',JSON.stringify({version:1,custom:db.custom.filter(x=>!x.hidden),usage:Object.fromEntries(Object.entries(db.usage).filter(([id])=>db.custom.some(x=>x.id===id&&!x.hidden)))},null,2),'application/json');return;}
     
     if(a==='edit'&&c?.source==='custom'){modal(c);return;}
     if(a==='delete'&&c&&confirm('确定永久删除这条自定义字卡吗？')){db.custom=db.custom.filter(x=>x.id!==id);delete db.usage[id];selected.delete(id);save();render();return;}
@@ -57,5 +87,5 @@
     root.addEventListener('input',e=>{if(e.target.id==='card-search'){query=e.target.value;render();const f=$('#card-search',root);f.focus();f.setSelectionRange(query.length,query.length);}});
     root.addEventListener('submit',e=>{if(e.target.id!=='card-form')return;e.preventDefault();const category=e.target.elements.category.value.trim(),text=e.target.elements.text.value.trim();if(!category||!text)return;if(editId){db.custom=db.custom.map(x=>x.id===editId?{...x,category,text}:x);}else{const r=add([{category,text}]);if(!r.n){alert('相同分类和内容的字卡已存在，没有重复添加。');return;}}save();$('#card-modal',root).hidden=true;editId=null;render();});
   }
-  window.SUSignalCards={init,ready:builtinsReady,markUsed(id){db.usage[id]=(db.usage[id]||0)+1;save();},getAll(){return [...builtins,...db.custom];},getBuiltins(){return builtins;},getCustom(){return db.custom;}};
+  window.SUSignalCards={init,ready:builtinsReady,markUsed(id){db.usage[id]=(db.usage[id]||0)+1;save();},getAll(){return [...builtins,...db.custom];},getBuiltins(){return builtins;},getCustom(){return db.custom.filter(x=>!x.hidden);},syncNickname};
 })();
