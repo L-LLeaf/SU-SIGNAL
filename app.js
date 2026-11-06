@@ -40,6 +40,7 @@
     appView.classList.remove("hidden");
     if (key === "cards" && window.SUSignalCards) { window.SUSignalCloseApp = closeApp; window.SUSignalCards.init(appView); return; }
     if (key === "engine" && window.SUSignalEngine) { window.SUSignalCloseApp = closeApp; window.SUSignalEngine.init(appView); return; }
+    if (key === "profile" && window.SUSignalProfile) { window.SUSignalCloseApp = closeApp; window.SUSignalProfile.init(appView); return; }
     if (key === "chat" && window.SUSignalChat) { window.SUSignalCloseApp = closeApp; window.SUSignalChat.init(appView); return; }
     appView.innerHTML = `
       <header class="app-view-header">
