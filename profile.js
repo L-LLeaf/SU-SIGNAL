@@ -2,12 +2,14 @@
   const KEY = "su-signal-profile-v1";
   const $ = (selector, scope=document) => scope.querySelector(selector);
   const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-  const defaults = { playerName:"LIGHT", suName:"苏新皓", playerAvatar:"", suAvatar:"" };
+  const defaults = { playerName:"LIGHT", suName:"苏新皓", playerAvatar:"./assets/player-default.webp", suAvatar:"./assets/su-default.webp" };
   let root = null, profile = null;
   function load() {
     try { profile = {...defaults, ...(JSON.parse(localStorage.getItem(KEY) || "{}"))}; }
     catch { profile = {...defaults}; }
     profile.suName = "苏新皓";
+    if (!profile.playerAvatar) profile.playerAvatar = defaults.playerAvatar;
+    if (!profile.suAvatar) profile.suAvatar = defaults.suAvatar;
   }
   function save() {
     profile.playerName = ($("#profile-player-name", root)?.value || "").trim().slice(0,20) || "LIGHT";
@@ -116,8 +118,8 @@
       const action = button.dataset.profileAction;
       if (action === "back") { window.SUSignalCloseApp?.(); return; }
       if (action === "save") { save(); return; }
-      if (action === "reset-player") { profile.playerAvatar=""; renderPreviews(); showStatus("玩家头像已恢复默认，记得保存"); return; }
-      if (action === "reset-su") { profile.suAvatar=""; renderPreviews(); showStatus("苏新皓头像已恢复默认，记得保存"); return; }
+      if (action === "reset-player") { profile.playerAvatar=defaults.playerAvatar; renderPreviews(); showStatus("玩家头像已恢复默认，记得保存"); return; }
+      if (action === "reset-su") { profile.suAvatar=defaults.suAvatar; renderPreviews(); showStatus("苏新皓头像已恢复默认，记得保存"); return; }
     });
     root.addEventListener("change", event => {
       if (event.target.id === "profile-player-file") readImage(event.target.files?.[0],"playerAvatar");
