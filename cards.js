@@ -19,7 +19,7 @@
   function render(){
     if(!root)return;const rows=list(), visibleCustom=db.custom.filter(c=>!c.hidden), allCats=[...new Set(visibleCustom.map(c=>c.category))];
     root.innerHTML='<header class="app-view-header"><button class="back-button" data-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL — CARDS</span></header>'+
-    '<div class="cards-heading"><div><p class="eyebrow">PRIVATE COMMUNICATION SYSTEM / PERSONAL LIBRARY</p><h2>CARDS<br><em>我的字卡</em></h2></div><div class="cards-count"><strong>'+db.custom.length+'</strong><span>MY CARDS</span><small>'+allCats.length+' CATEGORIES</small></div></div>'+
+    '<div class="cards-heading"><div><p class="eyebrow">PRIVATE COMMUNICATION SYSTEM / PERSONAL LIBRARY</p><h2>CARDS<br><em>我的字卡</em></h2></div><div class="cards-count"><strong>'+visibleCustom.length+'</strong><span>MY CARDS</span><small>'+allCats.length+' CATEGORIES</small></div></div>'+
     ''+
     '<div class="cards-tools"><label class="cards-search">⌕ <input id="card-search" type="search" placeholder="搜索文字或分类" value="'+esc(query)+'"></label><select id="card-category">'+['全部分类',...allCats].map(x=>'<option '+(x===category?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select><select id="card-sort"><option value="category" '+(sort==='category'?'selected':'')+'>默认排序</option><option value="newest" '+(sort==='newest'?'selected':'')+'>最新添加</option><option value="used" '+(sort==='used'?'selected':'')+'>使用次数</option></select></div>'+
     '<div class="cards-summary"><span>仅显示你创建或导入的自定义字卡</span><span>显示 '+rows.length+' 条</span></div>'+
