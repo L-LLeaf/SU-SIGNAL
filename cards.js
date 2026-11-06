@@ -2,6 +2,7 @@
   const KEY='su-signal-cards-v1', $=(s,r=document)=>r.querySelector(s);
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let db={custom:[],usage:{}}, builtins=[], cats=[], category='全部分类', query='', sort='category', selected=new Set(), editId=null, root=null;
+  const builtinsReady=fetch('./cards.json').then(r=>{if(!r.ok)throw new Error('字卡库加载失败');return r.json();}).then(j=>{builtins=Array.isArray(j.cards)?j.cards:[];cats=Array.isArray(j.categories)?j.categories:[];return builtins;}).catch(()=>{builtins=[];cats=[];return builtins;});
   try{const old=JSON.parse(localStorage.getItem(KEY)||'{}');db={custom:Array.isArray(old.custom)?old.custom:[],usage:old.usage&&typeof old.usage==='object'?old.usage:{}};}catch{}
   // Repair cards imported by older builds that stored 【分类】 inside the text.
   let repaired=false;
@@ -50,11 +51,11 @@
 
     if(a==='move'&&selected.size){const cat=prompt('移动到哪个分类？');if(cat?.trim()){db.custom=db.custom.map(x=>selected.has(x.id)?{...x,category:cat.trim()}:x);selected.clear();save();render();}return;}
   }
-  async function init(el){root=el;try{const r=await fetch('./cards.json');const j=await r.json();builtins=j.cards||[];cats=j.categories||[];}catch{builtins=[];cats=[];}render();if(root.dataset.cardsBound)return;root.dataset.cardsBound='1';
+  async function init(el){root=el;await builtinsReady;render();if(root.dataset.cardsBound)return;root.dataset.cardsBound='1';
     root.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b)action(b.dataset.act,b.dataset.id,b.dataset.tab);});
     root.addEventListener('change',e=>{if(e.target.id==='card-category'){category=e.target.value;selected.clear();render();}if(e.target.id==='card-sort'){sort=e.target.value;render();}if(e.target.matches('[data-select]')){e.target.checked?selected.add(e.target.dataset.select):selected.delete(e.target.dataset.select);render();}if(e.target.id==='select-visible'){list().forEach(x=>e.target.checked?selected.add(x.id):selected.delete(x.id));render();}if(e.target.id==='card-file'&&e.target.files[0]){const fr=new FileReader();fr.onload=()=>{const r=add(parse(String(fr.result)));alert('导入完成：新增 '+r.n+' 条，跳过重复 '+r.d+' 条。');render();};fr.readAsText(e.target.files[0]);e.target.value='';}});
     root.addEventListener('input',e=>{if(e.target.id==='card-search'){query=e.target.value;render();const f=$('#card-search',root);f.focus();f.setSelectionRange(query.length,query.length);}});
     root.addEventListener('submit',e=>{if(e.target.id!=='card-form')return;e.preventDefault();const category=e.target.elements.category.value.trim(),text=e.target.elements.text.value.trim();if(!category||!text)return;if(editId){db.custom=db.custom.map(x=>x.id===editId?{...x,category,text}:x);}else{const r=add([{category,text}]);if(!r.n){alert('相同分类和内容的字卡已存在，没有重复添加。');return;}}save();$('#card-modal',root).hidden=true;editId=null;render();});
   }
-  window.SUSignalCards={init,markUsed(id){db.usage[id]=(db.usage[id]||0)+1;save();},getAll(){return [...builtins,...db.custom];},getBuiltins(){return builtins;},getCustom(){return db.custom;}};
+  window.SUSignalCards={init,ready:builtinsReady,markUsed(id){db.usage[id]=(db.usage[id]||0)+1;save();},getAll(){return [...builtins,...db.custom];},getBuiltins(){return builtins;},getCustom(){return db.custom;}};
 })();
