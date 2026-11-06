@@ -24,3 +24,4 @@
 .chat-redpacket-replies button:active{background:#fff2ef}
 .chat-redpacket-done{padding:12px;background:#fff7f5;color:#999}
 @media(max-width:390px){.chat-redpacket-wrap{width:min(235px,66vw)}.chat-redpacket-card{padding:10px;gap:8px}.chat-redpacket-trigger{width:39px;height:39px;flex-basis:39px}}
+.chat-redpacket-modal{position:relative}.chat-redpacket-close{position:absolute;right:-8px;top:-9px;width:30px;height:30px;border:0;background:transparent;color:#aaa;font-size:25px;line-height:1}.chat-redpacket-replies button:last-child{color:#999;border-style:dashed}
