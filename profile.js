@@ -8,8 +8,10 @@
     try { profile = {...defaults, ...(JSON.parse(localStorage.getItem(KEY) || "{}"))}; }
     catch { profile = {...defaults}; }
     profile.suName = "苏新皓";
-    if (!profile.playerAvatar) profile.playerAvatar = defaults.playerAvatar;
-    if (!profile.suAvatar) profile.suAvatar = defaults.suAvatar;
+    // Migrate legacy placeholder values (L / SU) saved by earlier versions to real bundled defaults.
+    const validAvatar = value => typeof value === "string" && /^(data:image\/|https?:\/\/|\.\/|\/)/i.test(value) && value.length > 1;
+    if (!validAvatar(profile.playerAvatar)) profile.playerAvatar = defaults.playerAvatar;
+    if (!validAvatar(profile.suAvatar)) profile.suAvatar = defaults.suAvatar;
   }
   function save() {
     profile.playerName = ($("#profile-player-name", root)?.value || "").trim().slice(0,20) || "LIGHT";
