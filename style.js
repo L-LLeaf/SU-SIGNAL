@@ -13,7 +13,9 @@
     html.style.setProperty("--su-chat-font-size",Math.max(12,Math.min(22,Number(state.fontSize)||16))+"px");
     const bg=state.chatBackground;
     addStyle("su-style-custom",`
-      .chat-panel{background-image:${bg?'url("'+bg+'")':'none'};background-size:cover;background-position:center;background-repeat:no-repeat}
+      .chat-panel{background-image:none}
+      .chat-scroll{background-color:#fffafa;background-image:${bg?'url("'+bg+'")':'none'};background-size:cover;background-position:center;background-repeat:no-repeat}
+      .chat-date-sep span{background:rgba(255,250,250,.82)}
       .chat-scroll{font-size:var(--su-chat-font-size,16px)}
       ${state.fontCss||""}
       ${state.bubbleCss||""}
