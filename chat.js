@@ -10,7 +10,7 @@
   const profile=()=>read("su-signal-profile-v1",{});
   const style=()=>read("su-signal-style-v1",{});
   const defaults={delayMin:3,delayMax:8,activeMin:30,activeMax:90,noReplyChance:15,quoteChance:20,combineEnabled:false,combineChance:15,inputStateEnabled:true,inputStateText:"SU IS TYPING...",animationEnabled:true,connectionText:"CONNECTION ESTABLISHED",cooldown:0};
-  const cfg=()=>({...defaults,...engine()});
+  const cfg=()=>({...defaults,...engine(),inputStateEnabled:style().showInputState!==false,inputStateText:style().inputStateText||engine().inputStateText||defaults.inputStateText});
   function avatar(who){const p=profile();return who==="su"?(p.suAvatar||""):(p.playerAvatar||"");}
   function name(who){const p=profile();return who==="su"?(p.suName||"苏新皓"):(p.playerName||"LIGHT");}
   function formatTime(v){const d=new Date(v);return d.toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});}
