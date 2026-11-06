@@ -1,8 +1,8 @@
 (() => {
   const KEY='su-signal-cards-v1', $=(s,r=document)=>r.querySelector(s);
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let db={custom:[],favorites:[],blocked:[],usage:{}}, builtins=[], cats=[], category='全部分类', query='', sort='category', selected=new Set(), editId=null, root=null;
-  try{db={...db,...JSON.parse(localStorage.getItem(KEY)||'{}')};}catch{}
+  let db={custom:[],usage:{}}, builtins=[], cats=[], category='全部分类', query='', sort='category', selected=new Set(), editId=null, root=null;
+  try{const old=JSON.parse(localStorage.getItem(KEY)||'{}');db={custom:Array.isArray(old.custom)?old.custom:[],usage:old.usage&&typeof old.usage==='object'?old.usage:{}};}catch{}
   const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
   const list=()=>{let a=[...db.custom];if(category!=='全部分类')a=a.filter(c=>c.category===category);if(query)a=a.filter(c=>(c.text+' '+c.category).toLowerCase().includes(query.toLowerCase()));if(sort==='newest')a=[...a].reverse();if(sort==='used')a=[...a].sort((x,y)=>(db.usage[y.id]||0)-(db.usage[x.id]||0));return a;};
   function render(){
@@ -31,11 +31,11 @@
     if(a==='batch'){const s=prompt('每行一条。可用 [分类] 内容 指定分类；否则归入“未分类”。');if(s!==null){const r=add(parse(s));alert('新增 '+r.n+' 条，跳过重复 '+r.d+' 条。');render();}return;}
     if(a==='import'){$('#card-file',root).click();return;}
     if(a==='export'){download('SU-SIGNAL-自定义字卡.txt',db.custom.map(x=>'['+x.category+'] '+x.text).join('\n'));return;}
-    if(a==='json'){download('SU-SIGNAL-自定义字卡备份.json',JSON.stringify({version:1,custom:db.custom,favorites:db.favorites,blocked:db.blocked},null,2),'application/json');return;}
+    if(a==='json'){download('SU-SIGNAL-自定义字卡备份.json',JSON.stringify({version:1,custom:db.custom,usage:db.usage},null,2),'application/json');return;}
     
     if(a==='edit'&&c?.source==='custom'){modal(c);return;}
-    if(a==='delete'&&c&&confirm('确定删除这条自定义字卡吗？')){db.custom=db.custom.filter(x=>x.id!==id);db.favorites=db.favorites.filter(x=>x!==id);delete db.usage[id];save();render();return;}
-    if(a==='delete-many'&&selected.size&&confirm('确定删除选中的 '+selected.size+' 条自定义字卡吗？')){db.custom=db.custom.filter(x=>!selected.has(x.id));selected.clear();save();render();return;}
+    if(a==='delete'&&c&&confirm('确定永久删除这条自定义字卡吗？')){db.custom=db.custom.filter(x=>x.id!==id);delete db.usage[id];selected.delete(id);save();render();return;}
+    if(a==='delete-many'&&selected.size&&confirm('确定永久删除选中的 '+selected.size+' 条自定义字卡吗？此操作无法撤销。')){db.custom=db.custom.filter(x=>!selected.has(x.id));selected.clear();save();render();return;}
 
     if(a==='move'&&selected.size){const cat=prompt('移动到哪个分类？');if(cat?.trim()){db.custom=db.custom.map(x=>selected.has(x.id)?{...x,category:cat.trim()}:x);selected.clear();save();render();}return;}
   }
