@@ -1,5 +1,5 @@
-const CACHE = "su-signal-shell-v42";
-const ASSETS = ["./", "./index.html", "./styles.css", "./cards.css?v=b11dcb8", "./engine.css?v=engine3", "./chat.css?v=chat13", "./app.js", "./cards.js?v=nickname1", "./engine.js?v=engine3", "./chat.js?v=chat16", "./profile.js?v=profile5", "./profile.css?v=profile2", "./style.js?v=style3", "./style.css?v=style1", "./moment.js?v=moment2", "./moment.css?v=moment1", "./data.js?v=data1", "./data.css?v=data1", "./choice.js?v=choice3", "./choice.css?v=choice2", "./cards.json", "./manifest.webmanifest", "./assets/player-default.webp", "./assets/su-default.webp"];
+const CACHE = "su-signal-shell-v43";
+const ASSETS = ["./", "./index.html", "./styles.css", "./cards.css?v=b11dcb8", "./engine.css?v=engine3", "./chat.css?v=chat13", "./app.js", "./cards.js?v=nickname1", "./engine.js?v=engine3", "./chat.js?v=chat16", "./profile.js?v=profile5", "./profile.css?v=profile2", "./style.js?v=style3", "./style.css?v=style1", "./moment.js?v=moment2", "./moment.css?v=moment1", "./data.js?v=data1", "./data.css?v=data1", "./choice.js?v=choice4", "./choice.css?v=choice3", "./cards.json", "./manifest.webmanifest", "./assets/player-default.webp", "./assets/su-default.webp"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
