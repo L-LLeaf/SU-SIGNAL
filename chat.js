@@ -29,11 +29,12 @@
       const avatarHtml=showAvatars?'<div class="chat-avatar">'+(avatar(m.who)?'<img src="'+esc(avatar(m.who))+'" alt="">':(own?"L":"SU"))+'</div>':"";
       const quoted=m.quote?'<div class="chat-quoted">'+esc(m.quote)+'</div>':"";
       const recalled=m.recalled?'<em class="chat-recalled">这条消息已撤回</em>':esc(m.text);
-      return sep+'<article class="chat-message '+cls+(m.favorite?' is-favorite':'')+'" data-id="'+esc(m.id)+'">'+(!own?avatarHtml:"")+'<div class="chat-message-main">'+(showNames?'<div class="chat-name">'+esc(name(m.who))+'</div>':"")+'<div class="chat-bubble-wrap">'+quoted+'<div class="chat-bubble">'+recalled+'</div></div>'+(showTime||m.showTime?'<time>'+formatTime(m.time)+'</time>':"")+'</div>'+(own?avatarHtml:"")+'</article>';
+      const bubble=m.type==="redpacket"?'<button class="chat-redpacket-card '+(m.opened?'is-opened':'')+'" data-chat-act="redpacket-open" data-id="'+esc(m.id)+'"><span class="chat-redpacket-icon">🧧</span><span class="chat-redpacket-copy"><strong>'+(m.opened?'红包已领取':'恭喜发财，大吉大利')+'</strong><small>'+(m.opened?'点击查看领取记录':'苏新皓给你发了一个红包')+'</small></span><span class="chat-redpacket-arrow">›</span></button>':recalled;
+      return sep+'<article class="chat-message '+cls+(m.favorite?' is-favorite':'')+(m.type==="redpacket"?' is-redpacket':'')+'" data-id="'+esc(m.id)+'">'+(!own?avatarHtml:"")+'<div class="chat-message-main">'+(showNames?'<div class="chat-name">'+esc(name(m.who))+'</div>':"")+'<div class="chat-bubble-wrap">'+(m.type==="redpacket"?"":quoted)+'<div class="'+(m.type==="redpacket"?"chat-redpacket-wrap":"chat-bubble")+'">'+bubble+'</div></div>'+(showTime||m.showTime?'<time>'+formatTime(m.time)+'</time>':"")+'</div>'+(own?avatarHtml:"")+'</article>';
     }).join("");
     root.innerHTML='<header class="app-view-header"><button class="back-button" data-chat-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL</span></header>'+
       '<section class="chat-topline"><div><h2>CHAT <em>对话</em></h2></div><div class="chat-online"><i></i> SIGNAL READY</div></section>'+
-      '<section class="chat-panel"><div class="chat-contact"><div class="chat-contact-avatar">'+(avatar("su")?'<img src="'+esc(avatar("su"))+'" alt="">':"SU")+'</div><div><strong>'+esc(name("su"))+'</strong><small>ONLY YOU &amp; ME</small></div></div>'+
+      '<section class="chat-panel"><div class="chat-contact"><div class="chat-contact-person"><div class="chat-contact-avatar">'+(avatar("su")?'<img src="'+esc(avatar("su"))+'" alt="">':"SU")+'</div><div><strong>'+esc(name("su"))+'</strong><small>ONLY YOU &amp; ME</small></div></div><button class="chat-redpacket-trigger" type="button" data-chat-act="redpacket" aria-label="给我发一个红包" title="红包">🧧</button></div>'+
       '<div class="chat-scroll" id="chat-scroll">'+(rows||'<div class="chat-empty">这里还没有消息。<br>发送一句话，开始你们的对话。</div>')+'</div>'+
       '<div class="chat-connection" id="chat-connection" hidden></div>'+
       '<div class="chat-input-area"><textarea id="chat-input" rows="2" placeholder="发送消息…"></textarea><div class="chat-input-actions"><span>每次点击「连接」最多触发一条回复</span><div><button data-chat-act="send" class="chat-send">发送</button><button data-chat-act="speak" class="chat-speak">连接 ↗</button></div></div></div></section>'+
@@ -42,6 +43,12 @@
     scrollBottom();
   }
   function append(who,text,extra={}){const m={id:uid(),who,text,time:now(),...extra};messages.push(m);write();render();return m;}
+  function sendRedPacket(){
+    if(pending)return;
+    const amount=Math.floor(Math.random()*8888)+1;
+    const greetings=["今天想给你一点好运。","路过红包店，给你挑了一个。","收下嘛，不许跟我客气。","突然想给你发个红包，嘿嘿。"];
+    append("su","",{type:"redpacket",amount,opened:false,replied:false,greeting:greetings[Math.floor(Math.random()*greetings.length)]});
+  }
   function filtered(){return messages.filter(m=>!m.recalled&&m.text);}
   function getCards(){const all=window.SUSignalCards?.getAll?.()||[];return all.filter(c=>c&&c.text&&!c.disabled);}
   function chooseCard(){const all=getCards();if(!all.length)return null;const custom=all.filter(c=>c.source==="custom"),built=all.filter(c=>c.source!=="custom");const pool=[...built,...custom];return pool[Math.floor(Math.random()*pool.length)];}
@@ -75,12 +82,33 @@
     setConnection(s.connectionText||"CONNECTION ESTABLISHED");await delay(1100);setConnection("",false);pending=false;
   }
   function showModal(html){const m=$("#chat-modal",root),d=$("#chat-dialog",root);d.innerHTML=html;m.hidden=false;}
+  function openRedPacket(id){
+    const packet=messages.find(x=>x.id===id&&x.type==="redpacket");if(!packet)return;
+    if(!packet.opened){packet.opened=true;packet.openedAt=now();write();render();}
+    const amount=(packet.amount/100).toFixed(2);
+    const interactions=packet.replied
+      ? '<p class="chat-redpacket-done">你已经和小苏聊过这个红包啦。</p><div class="chat-dialog-actions"><button data-chat-act="modal-close">关闭</button></div>'
+      : '<p class="chat-redpacket-greeting">'+esc(packet.greeting||"给你一点小小的好运。")+'</p><p class="chat-redpacket-question">你想怎么回应他？</p><div class="chat-redpacket-replies"><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="thanks">谢谢小苏！</button><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="why">怎么突然给我发红包？</button><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="tease">你是不是有什么事求我？</button></div>';
+    showModal('<div class="chat-redpacket-modal"><div class="chat-redpacket-modal-icon">🧧</div><p class="chat-redpacket-from">苏新皓的红包</p><h3>¥'+amount+'</h3><p class="chat-redpacket-caption">已存入你的红包记录</p>'+interactions+'</div>');
+  }
   function closeModal(){$("#chat-modal",root).hidden=true;}
-  function action(a,id){
+  function action(a,id,replyChoice){
     const m=messages.find(x=>x.id===id);
-    if(a==="back"){clearTimeout(timer);clearInterval(activeTimer);window.SUSignalCloseApp?.();return;}
+    if(a==="back"){clearTimeout(timer);clearTimeout(activeTimer);pending=false;window.SUSignalCloseApp?.();return;}
     if(a==="send"){const input=$("#chat-input",root),text=input.value.trim();if(!text)return;append("player",text);input.value="";return;}
     if(a==="speak"){speak();return;}
+    if(a==="redpacket"){sendRedPacket();return;}
+    if(a==="redpacket-open"){openRedPacket(id);return;}
+    if(a==="redpacket-reply"){
+      const packet=messages.find(x=>x.id===id&&x.type==="redpacket");if(!packet||packet.replied)return;
+      const choices={
+        thanks:["谢谢小苏！","不用谢呀，今天想给你一点好运。"],
+        why:["怎么突然给我发红包？","没有为什么呀，就是突然想给你发。"],
+        tease:["你是不是有什么事求我？","哎呀，被你发现了？我就是想听你跟我说说话。"]
+      };
+      const pair=choices[replyChoice];if(!pair)return;
+      packet.replied=true;write();closeModal();append("player",pair[0]);append("su",pair[1]);return;
+    }
     if(a==="export"){const body=messages.map(m=>'['+new Date(m.time).toLocaleString("zh-CN")+'] '+(m.who==="player"?"LIGHT":"SU")+': '+(m.recalled?"[已撤回]":m.text)).join("\\n");const u=URL.createObjectURL(new Blob([body],{type:"text/plain;charset=utf-8"}));const link=document.createElement("a");link.href=u;link.download="SU-SIGNAL-聊天记录.txt";link.click();URL.revokeObjectURL(u);return;}
     if(a==="clear"&&confirm("确定清空全部聊天记录吗？此操作无法撤销。")){messages=[];write();render();return;}
     if(a==="modal-close"){closeModal();return;}
@@ -90,10 +118,10 @@
     if(a==="edit-save"&&m){const v=$("#chat-edit-text",root).value.trim();if(v){m.text=v;write();closeModal();render();}return;}
     if(a==="quote"&&m){const input=$("#chat-input",root);input.value="引用："+m.text+"\\n";input.focus();return;}
   }
-  function messageMenu(e){const item=e.target.closest(".chat-message");if(!item)return;const id=item.dataset.id,m=messages.find(x=>x.id===id);if(!m)return;showModal('<div class="chat-dialog-head"><strong>消息操作</strong><button data-chat-act="modal-close">×</button></div><p class="chat-menu-preview">'+esc(m.text||"这条消息已撤回")+'</p><div class="chat-menu-grid">'+(m.who==="player"?'<button data-chat-act="edit" data-id="'+id+'">编辑</button><button data-chat-act="recall" data-id="'+id+'">撤回</button>':"")+'<button data-chat-act="quote" data-id="'+id+'">引用</button><button data-chat-act="favorite" data-id="'+id+'">'+(m.favorite?"取消收藏":"收藏")+'</button><button data-chat-act="modal-close">关闭</button></div>');}
+  function messageMenu(e){const item=e.target.closest(".chat-message");if(!item)return;const id=item.dataset.id,m=messages.find(x=>x.id===id);if(!m||m.type==="redpacket")return;showModal('<div class="chat-dialog-head"><strong>消息操作</strong><button data-chat-act="modal-close">×</button></div><p class="chat-menu-preview">'+esc(m.text||"这条消息已撤回")+'</p><div class="chat-menu-grid">'+(m.who==="player"?'<button data-chat-act="edit" data-id="'+id+'">编辑</button><button data-chat-act="recall" data-id="'+id+'">撤回</button>':"")+'<button data-chat-act="quote" data-id="'+id+'">引用</button><button data-chat-act="favorite" data-id="'+id+'">'+(m.favorite?"取消收藏":"收藏")+'</button><button data-chat-act="modal-close">关闭</button></div>');}
   function startActive(){clearInterval(activeTimer);const s=cfg(),min=Math.max(1,Number(s.activeMin)||30),max=Math.max(min,Number(s.activeMax)||90);const ms=(min+Math.random()*(max-min))*60000;activeTimer=setTimeout(()=>{if(!document.hidden&&!pending&&root?.isConnected){const c=chooseCard();if(c){append("su",c.text,{cardId:c.id,proactive:true});window.SUSignalCards?.markUsed?.(c.id);}}startActive();},ms);}
   async function init(el){root=el;await (window.SUSignalCards?.ready||Promise.resolve());messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];render();if(root.dataset.chatBound)return;root.dataset.chatBound="1";
-    root.addEventListener("click",e=>{const b=e.target.closest("[data-chat-act]");if(b){action(b.dataset.chatAct,b.dataset.id);return;}if(e.target.closest(".chat-message"))messageMenu(e);});
+    root.addEventListener("click",e=>{const b=e.target.closest("[data-chat-act]");if(b){action(b.dataset.chatAct,b.dataset.id,b.dataset.reply);return;}if(e.target.closest(".chat-message"))messageMenu(e);});
     root.addEventListener("keydown",e=>{if(e.target.id==="chat-input"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();action("send");}});
     startActive();
   }
