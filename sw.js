@@ -1,5 +1,5 @@
-const CACHE = "su-signal-shell-v3";
-const ASSETS = ["./", "./index.html", "./styles.css", "./cards.css", "./app.js", "./cards.js", "./cards.json", "./manifest.webmanifest"];
+const CACHE = "su-signal-shell-v4";
+const ASSETS = ["./", "./index.html", "./styles.css", "./cards.css?v=5999449", "./app.js", "./cards.js?v=5999449", "./cards.json", "./manifest.webmanifest"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
