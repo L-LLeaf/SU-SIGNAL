@@ -65,8 +65,8 @@
     root.addEventListener("click",e=>{
       const b=e.target.closest("[data-engine-act]"); if(!b)return;
       if(b.dataset.engineAct==="back"){window.SUSignalCloseApp?.();return;}
-      if(b.dataset.engineAct==="save"){collect();settings.useBuiltins=true;settings.useCustom=true;if(!valid())return;save();const m=$("#engine-saved",root);m.textContent="已保存。内置字卡保持启用，自定义字卡会自动叠加。";return;}
-      if(b.dataset.engineAct==="reset"){if(confirm("确定将回复引擎设置恢复为默认值吗？")){settings={...DEFAULTS};save();render();}}
+      if(b.dataset.engineAct==="save"){collect();settings.useBuiltins=true;settings.useCustom=true;if(!valid())return;save();window.SUSignalChat?.refreshProactiveSchedule?.();const m=$("#engine-saved",root);m.textContent="已保存。内置字卡保持启用，自定义字卡会自动叠加。";return;}
+      if(b.dataset.engineAct==="reset"){if(confirm("确定将回复引擎设置恢复为默认值吗？")){settings={...DEFAULTS};save();window.SUSignalChat?.refreshProactiveSchedule?.();render();}}
     });
   }
   window.SUSignalEngine={init,getSettings(){return {...settings,excludedCategories:[...settings.excludedCategories]};},save,defaults:{...DEFAULTS}};
