@@ -88,8 +88,8 @@
     const amount=(packet.amount/100).toFixed(2);
     const interactions=packet.replied
       ? '<p class="chat-redpacket-done">你已经和小苏聊过这个红包啦。</p><div class="chat-dialog-actions"><button data-chat-act="modal-close">关闭</button></div>'
-      : '<p class="chat-redpacket-greeting">'+esc(packet.greeting||"给你一点小小的好运。")+'</p><p class="chat-redpacket-question">你想怎么回应他？</p><div class="chat-redpacket-replies"><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="thanks">谢谢小苏！</button><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="why">怎么突然给我发红包？</button><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="tease">你是不是有什么事求我？</button></div>';
-    showModal('<div class="chat-redpacket-modal"><div class="chat-redpacket-modal-icon">🧧</div><p class="chat-redpacket-from">苏新皓的红包</p><h3>¥'+amount+'</h3><p class="chat-redpacket-caption">已存入你的红包记录</p>'+interactions+'</div>');
+      : '<p class="chat-redpacket-greeting">'+esc(packet.greeting||"给你一点小小的好运。")+'</p><p class="chat-redpacket-question">你想怎么回应他？</p><div class="chat-redpacket-replies"><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="thanks">谢谢小苏！</button><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="why">怎么突然给我发红包？</button><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="tease">你是不是有什么事求我？</button><button data-chat-act="redpacket-reply" data-id="'+esc(id)+'" data-reply="later">我先收下，晚点再聊。</button></div>';
+    showModal('<div class="chat-redpacket-modal"><button class="chat-redpacket-close" data-chat-act="modal-close" aria-label="关闭">×</button><div class="chat-redpacket-modal-icon">🧧</div><p class="chat-redpacket-from">苏新皓的红包</p><h3>¥'+amount+'</h3><p class="chat-redpacket-caption">已存入你的红包记录</p>'+interactions+'</div>');
   }
   function closeModal(){$("#chat-modal",root).hidden=true;}
   function action(a,id,replyChoice){
@@ -104,7 +104,8 @@
       const choices={
         thanks:["谢谢小苏！","不用谢呀，今天想给你一点好运。"],
         why:["怎么突然给我发红包？","没有为什么呀，就是突然想给你发。"],
-        tease:["你是不是有什么事求我？","哎呀，被你发现了？我就是想听你跟我说说话。"]
+        tease:["你是不是有什么事求我？","哎呀，被你发现了？我就是想听你跟我说说话。"],
+        later:["我先收下，晚点再聊。","好呀，不着急。你忙完再来找我就好。"]
       };
       const pair=choices[replyChoice];if(!pair)return;
       packet.replied=true;write();closeModal();append("player",pair[0]);append("su",pair[1]);return;
