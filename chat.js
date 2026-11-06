@@ -45,7 +45,7 @@
   function append(who,text,extra={}){const m={id:uid(),who,text,time:now(),...extra};messages.push(m);write();render();return m;}
   function sendRedPacket(){
     if(pending)return;
-    const amount=Math.floor(Math.random()*8888)+1;
+    const amount=Math.max(1,Math.floor(-Math.log(1-Math.random())*8888));
     const greetings=["今天想给你一点好运。","路过红包店，给你挑了一个。","收下嘛，不许跟我客气。","突然想给你发个红包，嘿嘿。"];
     append("su","",{type:"redpacket",amount,opened:false,replied:false,greeting:greetings[Math.floor(Math.random()*greetings.length)]});
   }
