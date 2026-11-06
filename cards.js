@@ -13,14 +13,14 @@
     '<div class="cards-tools"><label class="cards-search">⌕ <input id="card-search" type="search" placeholder="搜索文字或分类" value="'+esc(query)+'"></label><select id="card-category">'+['全部分类',...allCats].map(x=>'<option '+(x===category?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select><select id="card-sort"><option value="category" '+(sort==='category'?'selected':'')+'>默认排序</option><option value="newest" '+(sort==='newest'?'selected':'')+'>最新添加</option><option value="used" '+(sort==='used'?'selected':'')+'>使用次数</option></select></div>'+
     '<div class="cards-summary"><span>仅显示你创建或导入的自定义字卡</span><span>显示 '+rows.length+' 条</span></div>'+
     '<div class="cards-actions"><button class="cards-primary" data-act="add">＋ 新增字卡</button><button data-act="batch">批量添加</button><button data-act="import">导入 TXT</button><button data-act="export">导出 TXT</button><button data-act="json">备份 JSON</button></div>'+
-    '<div class="cards-import-help"><strong>TXT 导入格式说明</strong><span>每行一条字卡；格式为 <code>[分类名称] 字卡内容</code>，例如 <code>[日常] 今天吃饭了吗？</code>。</span><span>不写分类时默认归入「未分类」；空行忽略，重复字卡自动跳过。</span></div>'+
+    '<div class="cards-import-help"><strong>TXT 导入格式说明</strong><span>每行一条字卡；格式为 <code>【分类名称】字卡内容</code>，例如 <code>【日常】今天吃饭了吗？</code>。</span><span>不写分类时默认归入「未分类」；空行忽略，重复字卡自动跳过。</span></div>'+
     '<div class="cards-bulkbar"><label><input type="checkbox" id="select-visible"> 全选当前列表</label><span>'+selected.size+' 已选择</span><div><button data-act="move">移动分类</button> '+'<button class="danger" data-act="delete-many">删除</button>'+'</div></div>'+
     '<div class="cards-list">'+(rows.length?rows.map(c=>'<article class="card-row"><label><input type="checkbox" data-select="'+esc(c.id)+'" '+(selected.has(c.id)?'checked':'')+'></label><div class="card-copy"><div class="card-meta"><span>'+esc(c.category)+'</span><small>'+'CUSTOM · '+(db.usage[c.id]||0)+' 次使用'+'</small></div><p>'+esc(c.text)+'</p></div><div class="card-buttons"><button data-act="edit" data-id="'+esc(c.id)+'">修改</button><button class="danger" data-act="delete" data-id="'+esc(c.id)+'">删除</button></div></article>').join(''):'<div class="cards-empty">没有找到字卡。试试其他关键词或分类。</div>')+'</div>'+
     '<div class="cards-footnote"><span>自定义字卡 '+db.custom.length+' 条</span><span>使用次数仅统计实际发送</span></div>'+
     '<input id="card-file" type="file" accept=".txt,text/plain" hidden><div class="cards-modal" id="card-modal" hidden><form id="card-form" class="cards-dialog"><div class="cards-dialog-top"><strong>'+(editId?'编辑自定义字卡':'新增自定义字卡')+'</strong><button type="button" data-act="close">×</button></div><label>分类<input name="category" list="card-categories" required></label><datalist id="card-categories">'+allCats.map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist><label>字卡内容<textarea name="text" rows="4" required></textarea></label><p class="cards-form-hint">内置字卡不可修改；这里仅管理你的自定义字卡。</p><div class="cards-dialog-actions"><button type="button" data-act="close">取消</button><button class="cards-primary" type="submit">保存</button></div></form></div>';
   }
   function modal(c){editId=c?.id||null;const box=$('#card-modal',root);box.hidden=false;const f=$('#card-form',root);f.elements.category.value=c?.category||(category!=='全部分类'?category:'');f.elements.text.value=c?.text||'';f.elements.category.focus();}
-  function parse(s){return s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^\[([^\]]+)\]\s*(.+)$/);return {category:(m?.[1]||'未分类').trim(),text:(m?.[2]||x).trim()};}).filter(x=>x.text);}
+  function parse(s){return s.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(x=>{const m=x.match(/^(?:【([^】]+)】|\[([^\]]+)\])\s*(.+)$/);return {category:(m?.[1]||m?.[2]||'未分类').trim(),text:(m?.[3]||x).trim()};}).filter(x=>x.text);}
   function add(items){let n=0,d=0;for(const x of items){if([...builtins,...db.custom].some(c=>c.category===x.category&&c.text.trim()===x.text.trim())){d++;continue;}db.custom.push({id:'custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),category:x.category,text:x.text,source:'custom'});n++;}save();return {n,d};}
   const download=(name,body,type)=>{const u=URL.createObjectURL(new Blob([body],{type:type||'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);};
   function action(a,id,tabName){
@@ -29,9 +29,9 @@
     
     if(a==='add'){modal();return;}
     if(a==='close'){$('#card-modal',root).hidden=true;editId=null;return;}
-    if(a==='batch'){const s=prompt('每行一条。可用 [分类] 内容 指定分类；否则归入“未分类”。');if(s!==null){const r=add(parse(s));alert('新增 '+r.n+' 条，跳过重复 '+r.d+' 条。');render();}return;}
+    if(a==='batch'){const s=prompt('每行一条。可用 【分类】内容 指定分类；否则归入“未分类”。');if(s!==null){const r=add(parse(s));alert('新增 '+r.n+' 条，跳过重复 '+r.d+' 条。');render();}return;}
     if(a==='import'){$('#card-file',root).click();return;}
-    if(a==='export'){download('SU-SIGNAL-自定义字卡.txt',db.custom.map(x=>'['+x.category+'] '+x.text).join('\n'));return;}
+    if(a==='export'){download('SU-SIGNAL-自定义字卡.txt',db.custom.map(x=>'【'+x.category+'】'+x.text).join('\n'));return;}
     if(a==='json'){download('SU-SIGNAL-自定义字卡备份.json',JSON.stringify({version:1,custom:db.custom,usage:db.usage},null,2),'application/json');return;}
     
     if(a==='edit'&&c?.source==='custom'){modal(c);return;}
