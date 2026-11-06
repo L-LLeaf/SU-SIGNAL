@@ -127,8 +127,9 @@
     root.addEventListener("keydown",e=>{if(e.target.id==="chat-input"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();action("send");}});
   }
   async function startProactiveScheduler(){if(activeStarted)return;activeStarted=true;await (window.SUSignalCards?.ready||Promise.resolve());messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];startActive();}
+  function refreshProactiveSchedule(){if(activeStarted)startActive();}
   async function testProactive(){await (window.SUSignalCards?.ready||Promise.resolve());if(!root){messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];}const sent=sendProactiveNow();return {sent,notified:sent&&NotificationAvailable()};}
   function NotificationAvailable(){return "Notification" in window&&Notification.permission==="granted";}
-  window.SUSignalChat={init,getMessages:()=>messages,append,testProactive,startProactiveScheduler};
+  window.SUSignalChat={init,getMessages:()=>messages,append,testProactive,startProactiveScheduler,refreshProactiveSchedule};
   startProactiveScheduler();
 })();
