@@ -38,7 +38,7 @@
       '<div class="chat-scroll" id="chat-scroll">'+(rows||'<div class="chat-empty">这里还没有消息。<br>发送一句话，开始你们的对话。</div>')+'</div>'+
       '<div class="chat-connection" id="chat-connection" hidden></div>'+
       '<div class="chat-input-area"><textarea id="chat-input" rows="2" placeholder="发送消息…"></textarea><div class="chat-input-actions"><span>每次点击「连接」最多触发一条回复</span><div><button data-chat-act="send" class="chat-send">发送</button><button data-chat-act="speak" class="chat-speak">连接 ↗</button></div></div></div></section>'+
-      '<div class="chat-bottom-tools"><div class="chat-bottom-actions"><button data-chat-act="clear">清空聊天</button><button data-chat-act="export">导出聊天</button></div><span>消息仅保存在当前设备</span></div>'+
+      '<div class="chat-bottom-tools"><div class="chat-bottom-actions"><button data-chat-act="proactive-test">立即测试主动消息</button><button data-chat-act="clear">清空聊天</button><button data-chat-act="export">导出聊天</button></div><span>消息仅保存在当前设备</span></div>'+
       '<div class="chat-modal" id="chat-modal" hidden><div class="chat-dialog" id="chat-dialog"></div></div>';
     scrollBottom();
   }
@@ -97,6 +97,7 @@
     if(a==="back"){clearTimeout(timer);clearTimeout(activeTimer);pending=false;window.SUSignalCloseApp?.();return;}
     if(a==="send"){const input=$("#chat-input",root),text=input.value.trim();if(!text)return;append("player",text);input.value="";return;}
     if(a==="speak"){speak();return;}
+    if(a==="proactive-test"){const ok=sendProactiveNow();if(!ok)setConnection(pending?"正在生成回复，请稍候。":"字卡库暂时没有可用内容。");else setConnection("主动消息已发送；若通知权限已允许，也会尝试弹出系统通知。");return;}
     if(a==="redpacket"){sendRedPacket();return;}
     if(a==="redpacket-open"){openRedPacket(id);return;}
     if(a==="redpacket-reply"){
@@ -120,7 +121,8 @@
     if(a==="quote"&&m){const input=$("#chat-input",root);input.value="引用："+m.text+"\\n";input.focus();return;}
   }
   function messageMenu(e){const item=e.target.closest(".chat-message");if(!item)return;const id=item.dataset.id,m=messages.find(x=>x.id===id);if(!m||m.type==="redpacket")return;showModal('<div class="chat-dialog-head"><strong>消息操作</strong><button data-chat-act="modal-close">×</button></div><p class="chat-menu-preview">'+esc(m.text||"这条消息已撤回")+'</p><div class="chat-menu-grid">'+(m.who==="player"?'<button data-chat-act="edit" data-id="'+id+'">编辑</button><button data-chat-act="recall" data-id="'+id+'">撤回</button>':"")+'<button data-chat-act="quote" data-id="'+id+'">引用</button><button data-chat-act="favorite" data-id="'+id+'">'+(m.favorite?"取消收藏":"收藏")+'</button><button data-chat-act="modal-close">关闭</button></div>');}
-  function startActive(){clearInterval(activeTimer);const s=cfg(),min=Math.max(1,Number(s.activeMin)||30),max=Math.max(min,Number(s.activeMax)||90);const ms=(min+Math.random()*(max-min))*60000;activeTimer=setTimeout(()=>{if(!document.hidden&&!pending&&root?.isConnected){const c=chooseCard();if(c){append("su",c.text,{cardId:c.id,proactive:true});window.SUSignalCards?.markUsed?.(c.id);window.SUSignalNotice?.notifyProactive?.(c.text);}}startActive();},ms);}
+  function sendProactiveNow(){if(pending)return false;const c=chooseCard();if(!c)return false;append("su",c.text,{cardId:c.id,proactive:true,test:true});window.SUSignalCards?.markUsed?.(c.id);window.SUSignalNotice?.notifyProactive?.(c.text);return true;}
+  function startActive(){clearTimeout(activeTimer);const s=cfg(),min=Math.max(1,Number(s.activeMin)||30),max=Math.max(min,Number(s.activeMax)||90);const ms=(min+Math.random()*(max-min))*60000;activeTimer=setTimeout(()=>{if(!document.hidden&&!pending&&root?.isConnected){const c=chooseCard();if(c){append("su",c.text,{cardId:c.id,proactive:true});window.SUSignalCards?.markUsed?.(c.id);window.SUSignalNotice?.notifyProactive?.(c.text);}}startActive();},ms);}
   async function init(el){root=el;await (window.SUSignalCards?.ready||Promise.resolve());messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];render();if(root.dataset.chatBound)return;root.dataset.chatBound="1";
     root.addEventListener("click",e=>{const b=e.target.closest("[data-chat-act]");if(b){action(b.dataset.chatAct,b.dataset.id,b.dataset.reply);return;}if(e.target.closest(".chat-message"))messageMenu(e);});
     root.addEventListener("keydown",e=>{if(e.target.id==="chat-input"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();action("send");}});
