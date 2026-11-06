@@ -14,8 +14,13 @@
     profile.suName = "苏新皓";
     try {
       localStorage.setItem(KEY, JSON.stringify(profile));
-      showStatus("资料已保存");
       renderPreviews();
+      const sync = window.SUSignalCards?.syncNickname?.(profile.playerName);
+      if (sync && typeof sync.then === "function") {
+        sync.then(result => showStatus("资料已保存 · 已同步昵称字卡")).catch(() => showStatus("资料已保存，但昵称字卡同步失败，请重新保存"));
+      } else {
+        showStatus("资料已保存");
+      }
     } catch {
       showStatus("保存失败：图片可能过大，请换一张图片再试");
     }
