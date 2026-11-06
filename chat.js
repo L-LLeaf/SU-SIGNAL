@@ -76,7 +76,7 @@
     if(s.inputStateEnabled){setConnection(s.inputStateText||"SU IS TYPING...");}
     const min=Math.max(0,Number(s.delayMin)||0),max=Math.max(min,Number(s.delayMax)||min);
     await delay((min+Math.random()*(max-min))*1000);
-    if(reply.noReply){setConnection("CONNECTION ESTABLISHED · 已读");await delay(900);setConnection("",false);pending=false;return;}
+    if(reply.noReply){setConnection("CONNECTION ESTABLISHED"+(style().showReadState===false?"":" · 已读"));await delay(900);setConnection("",false);pending=false;return;}
     markUsage(reply);
     append("su",reply.text,{quote:reply.quote||null,cardId:reply.id||null});
     setConnection(s.connectionText||"CONNECTION ESTABLISHED");await delay(1100);setConnection("",false);pending=false;
