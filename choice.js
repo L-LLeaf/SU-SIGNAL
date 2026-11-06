@@ -6,13 +6,26 @@
   function render(){
     if(!root)return;
     const n=options.length,step=360/n;
-    const colors=options.map((_,i)=>i%2===0?"#E32636":"#fff");
-    const stops=options.map((_,i)=>colors[i]+" "+(i*step)+"deg "+((i+1)*step)+"deg").join(",");
+    const palette=[
+      {bg:"#A90F2B",fg:"#FFFFFF"},
+      {bg:"#FFF8F7",fg:"#8F1024"},
+      {bg:"#E32636",fg:"#FFFFFF"},
+      {bg:"#F9E1E5",fg:"#A90F2B"},
+      {bg:"#7F1025",fg:"#FFFFFF"},
+      {bg:"#FFFFFF",fg:"#8F1024"},
+      {bg:"#F27B89",fg:"#64101E"}
+    ];
+    const colors=options.map((_,i)=>palette[i%palette.length]);
+    const gap=Math.min(1.2,step*.035);
+    const stops=options.map((_,i)=>{
+      const start=i*step,end=(i+1)*step,c=colors[i].bg;
+      return c+" "+(start+gap)+"deg "+(end-gap)+"deg";
+    }).join(",");
     const labelWidth=n>=6?64:n===5?76:88;
     const radius=n>=6?100:n===5?96:91;
     const labels=options.map((v,i)=>{
       const angle=(i+.5)*step;
-      return '<span class="choice-wheel-label" title="'+esc(v)+'" style="width:'+labelWidth+'px;margin-left:-'+(labelWidth/2)+'px;color:'+(i%2===0?'#fff':'#171717')+';font-size:'+(n>=6?'9px':'11px')+';transform:rotate('+angle+'deg) translateY(-'+radius+'px) rotate(-'+angle+'deg)">'+esc(v.trim()?v:"未命名")+'</span>';
+      return '<span class="choice-wheel-label" title="'+esc(v)+'" style="width:'+labelWidth+'px;margin-left:-'+(labelWidth/2)+'px;color:'+colors[i].fg+';font-size:'+(n>=6?'9px':'11px')+';transform:rotate('+angle+'deg) translateY(-'+radius+'px) rotate(-'+angle+'deg)">'+esc(v.trim()?v:"未命名")+'</span>';
     }).join("");
     root.innerHTML='<header class="app-view-header"><button class="back-button" type="button" data-choice-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL — CHOICE</span></header>'+
       '<section class="choice-heading"><p class="eyebrow">LET HIM DECIDE / 08</p><h2>CHOICE<br><em>选择</em></h2><p>把难以决定的小事交给新皓吧。</p></section>'+
