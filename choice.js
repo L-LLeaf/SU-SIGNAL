@@ -10,17 +10,17 @@
     const labels=options.map((v,i)=>{const angle=(i+.5)*step;return '<span class="choice-wheel-label" style="transform:rotate('+angle+'deg) translateY(-'+(n<=4?91: n<=5?88:82)+'px) rotate(-'+angle+'deg)">'+esc(v)+'</span>';}).join("");
     root.innerHTML='<header class="app-view-header"><button class="back-button" data-choice-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL — CHOICE</span></header>'+
       '<section class="choice-heading"><p class="eyebrow">LET HIM DECIDE / 08</p><h2>CHOICE<br><em>选择</em></h2><p>把难以决定的小事交给新皓吧。</p></section>'+
-      '<section class="choice-question"><label for="choice-question">今天想决定什么？</label><input id="choice-question" maxlength="80" value="'+esc(question)+'" placeholder="例如：今天吃什么？"></section>'+
+      '<section class="choice-question"><label for="choice-question">今天想决定什么？</label><input id="choice-question" maxlength="80" value="'+esc(question)+'" placeholder="例如：今天吃什么？" '+(spinning?'disabled':'')+'></section>'+
       '<section class="choice-options"><div class="choice-section-title"><span>YOUR OPTIONS</span><strong>选项 '+n+' / 7</strong></div>'+
-      '<div class="choice-option-list">'+options.map((v,i)=>'<div class="choice-option-row"><span class="choice-option-index">'+String(i+1).padStart(2,"0")+'</span><input data-choice-option="'+i+'" maxlength="24" value="'+esc(v)+'" aria-label="选项 '+(i+1)+'"><button data-choice-act="remove" data-index="'+i+'" '+(n<=2||spinning?'disabled':'')+' aria-label="删除选项">×</button></div>').join("")+'</div>'+
+      '<div class="choice-option-list">'+options.map((v,i)=>'<div class="choice-option-row"><span class="choice-option-index">'+String(i+1).padStart(2,"0")+'</span><input data-choice-option="'+i+'" maxlength="24" value="'+esc(v)+'" '+(spinning?'disabled':'')+' aria-label="选项 '+(i+1)+'"><button data-choice-act="remove" data-index="'+i+'" '+(n<=2||spinning?'disabled':'')+' aria-label="删除选项">×</button></div>').join("")+'</div>'+
       '<button class="choice-add" data-choice-act="add" '+(n>=7||spinning?'disabled':'')+'>＋ 添加选项</button></section>'+
       '<section class="choice-wheel-section"><div class="choice-pointer"></div><div class="choice-wheel" id="choice-wheel" style="background:conic-gradient('+stops+');transform:rotate('+rotation+'deg)">'+labels+'<div class="choice-wheel-center">'+apple()+'</div></div>'+
       '<button class="choice-spin" data-choice-act="spin" '+(spinning?'disabled':'')+'>新皓帮我决定，拜托啦～</button>'+
       (spinning?'<p class="choice-spin-status">正在认真帮你挑选……</p>':"")+
-      (result!==null?'<div class="choice-result"><span>THAT'S THE ONE</span><strong>'+esc(result)+'</strong><p>那就选这个啦！</p><button data-choice-act="again">再转一次 ↗</button></div>':"")+
+      (result!==null?'<div class="choice-result" id="choice-result"><span>THAT'S THE ONE</span><strong>'+esc(result)+'</strong><p>那就选这个啦！</p><button data-choice-act="again">再转一次 ↗</button></div>':"")+
       '</section><p class="choice-footnote">每个选项机会均等。结果由本地随机生成，不需要联网，也不会读取字卡库。</p>';
     $("#choice-question").addEventListener("input",e=>question=e.target.value);
-    root.querySelectorAll("[data-choice-option]").forEach(el=>el.addEventListener("input",e=>{options[Number(e.target.dataset.choiceOption)]=e.target.value;result=null;}));
+    root.querySelectorAll("[data-choice-option]").forEach(el=>el.addEventListener("input",e=>{const i=Number(e.target.dataset.choiceOption);options[i]=e.target.value;result=null;const label=root.querySelectorAll(".choice-wheel-label")[i];if(label)label.textContent=e.target.value||"未命名";$("#choice-result")?.remove();}));
   }
   function spin(){
     if(spinning||options.length<2)return;
