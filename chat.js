@@ -38,7 +38,7 @@
       '<div class="chat-scroll" id="chat-scroll">'+(rows||'<div class="chat-empty">这里还没有消息。<br>发送一句话，开始你们的对话。</div>')+'</div>'+
       '<div class="chat-connection" id="chat-connection" hidden></div>'+
       '<div class="chat-input-area"><textarea id="chat-input" rows="2" placeholder="发送消息…"></textarea><div class="chat-input-actions"><span>每次点击「连接」最多触发一条回复</span><div><button data-chat-act="send" class="chat-send">发送</button><button data-chat-act="speak" class="chat-speak">连接 ↗</button></div></div></div></section>'+
-      '<div class="chat-bottom-tools"><div class="chat-bottom-actions"><button data-chat-act="proactive-test">立即测试主动消息</button><button data-chat-act="clear">清空聊天</button><button data-chat-act="export">导出聊天</button></div><span>消息仅保存在当前设备</span></div>'+
+      '<div class="chat-bottom-tools"><div class="chat-bottom-actions"><button data-chat-act="clear">清空聊天</button><button data-chat-act="export">导出聊天</button></div><span>消息仅保存在当前设备</span></div>'+
       '<div class="chat-modal" id="chat-modal" hidden><div class="chat-dialog" id="chat-dialog"></div></div>';
     scrollBottom();
   }
@@ -97,7 +97,6 @@
     if(a==="back"){clearTimeout(timer);clearTimeout(activeTimer);pending=false;window.SUSignalCloseApp?.();return;}
     if(a==="send"){const input=$("#chat-input",root),text=input.value.trim();if(!text)return;append("player",text);input.value="";return;}
     if(a==="speak"){speak();return;}
-    if(a==="proactive-test"){const ok=sendProactiveNow();if(!ok)setConnection(pending?"正在生成回复，请稍候。":"字卡库暂时没有可用内容。");else setConnection("主动消息已发送；若通知权限已允许，也会尝试弹出系统通知。");return;}
     if(a==="redpacket"){sendRedPacket();return;}
     if(a==="redpacket-open"){openRedPacket(id);return;}
     if(a==="redpacket-reply"){
@@ -128,5 +127,7 @@
     root.addEventListener("keydown",e=>{if(e.target.id==="chat-input"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();action("send");}});
     startActive();
   }
-  window.SUSignalChat={init,getMessages:()=>messages,append};
+  async function testProactive(){await (window.SUSignalCards?.ready||Promise.resolve());if(!root){messages=read(KEY,[]);if(!Array.isArray(messages))messages=[];}const sent=sendProactiveNow();return {sent,notified:sent&&NotificationAvailable()};}
+  function NotificationAvailable(){return "Notification" in window&&Notification.permission==="granted";}
+  window.SUSignalChat={init,getMessages:()=>messages,append,testProactive};
 })();
