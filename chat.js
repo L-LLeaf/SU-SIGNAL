@@ -33,7 +33,7 @@
     }).join("");
     root.innerHTML='<header class="app-view-header"><button class="back-button" data-chat-act="back">← HOME</button><span class="app-kicker">SU / SIGNAL</span></header>'+
       '<section class="chat-topline"><div><h2>CHAT <em>对话</em></h2></div><div class="chat-online"><i></i> SIGNAL READY</div></section>'+
-      '<section class="chat-panel"><div class="chat-contact"><div class="chat-contact-avatar">'+(avatar("su")?'<img src="'+esc(avatar("su"))+'" alt="">':"SU")+'</div><div><strong>'+esc(name("su"))+'</strong></div></div>'+
+      '<section class="chat-panel"><div class="chat-contact"><div class="chat-contact-avatar">'+(avatar("su")?'<img src="'+esc(avatar("su"))+'" alt="">':"SU")+'</div><div><strong>'+esc(name("su"))+'</strong><small>ONLY YOU &amp; ME</small></div></div>'+
       '<div class="chat-scroll" id="chat-scroll">'+(rows||'<div class="chat-empty">这里还没有消息。<br>发送一句话，开始你们的对话。</div>')+'</div>'+
       '<div class="chat-connection" id="chat-connection" hidden></div>'+
       '<div class="chat-input-area"><textarea id="chat-input" rows="2" placeholder="发送消息…"></textarea><div class="chat-input-actions"><span>每次点击「连接」最多触发一条回复</span><div><button data-chat-act="send" class="chat-send">发送</button><button data-chat-act="speak" class="chat-speak">连接 ↗</button></div></div></div></section>'+
